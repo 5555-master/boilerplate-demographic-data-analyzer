@@ -11,7 +11,7 @@ def calculate_demographic_data(print_data=True):
    
 
     # What is the average age of men?
-    average_age_men = df["age"].mean()
+    average_age_men = df[df["sex"]=='Male']["age"].mean().round(1)
 
     # What is the percentage of people who have a Bachelor's degree?
     percentage_bachelors = round(((df[df["education"]=='Bachelors'])["education"].count()/df["education"].count())*100,1)
@@ -36,13 +36,22 @@ def calculate_demographic_data(print_data=True):
     rich_percentage = round((df[df["hours-per-week"]==min_work_hours & (df["salary"] == ">50K")]["hours-per-week"].count() /num_min_workers)*100,1)
 
     # What country has the highest percentage of people that earn >50K?
-    highest_earning_country = df[df["salary"]==">50K"].groupby("native-country").count()["age"].idxmax(axis=0)
-    print( df[df["salary"]==">50K"].groupby("native-country").count()["age"])
-    highest_earning_country_percentage = round(((df[df["salary"]==">50K"].groupby("native-country").count()["age"].max()) / df["native-country"].count())*100,1)
+   
+    all_country_count =df["native-country"].value_counts()
+    country_high_salary =df[df["salary"]==">50K"]["native-country"].value_counts()
+    #print(high_salary.set_index("key").join(all.set_index("key")))
+    a=pd.merge(all_country_count,country_high_salary,right_index = True,
+               left_index = True)
+    a["percentage"] = a["native-country_y"]/a["native-country_x"]*100
+    b=a[a["percentage"]==a["percentage"].max()]
+    highest_earning_country = b.index[0]
+
     
+  
+    highest_earning_country_percentage = round(b["percentage"][0],1)
 
     # Identify the most popular occupation for those who earn >50K in India.
-    top_IN_occupation = df[df["salary"]==">50K"].groupby("occupation").count()["age"].idxmax(axis=0)
+    top_IN_occupation = df[(df["salary"]==">50K") & (df["native-country"]=="India")]["occupation"].value_counts().idxmax()
 
     # DO NOT MODIFY BELOW THIS LINE
 
